@@ -89,7 +89,7 @@ a = ['# ########################################################################
      '#         #           #     #         #               #           #             #',
      '############################################################################### #']
 
-print(a[40][80]) # last position
+print(a[40][79]) # last position
 
 class Labyrinth:
     def __init__(self):
@@ -180,12 +180,44 @@ class Labyrinth:
         return all_points
 
     def all_possible_three_directions(self):
-        three_directions = set()
+        # add start and finish to all crossroads
+        three_directions = {(1, 0), (40, 79)}
         for point in self.all_possible_points():
             if self.is_not_wall(point) and self.crossroad(point):
                 three_directions.add(point)
         return three_directions
 
+        # zapomneš si kje si bil - to je corssroad
+        # dve poti imaš - greš pač kontra od crossroada - tja kjer greš edino lahko
+        # če ne moreš iti naprej si v slepi ulici
+        # če si slučajno na (1, 0) ali na (40, 79)} javi da si povezal konec ali začetek
+        # pojdi gledat še ostale dve smeri
+        # prideš pri dveh od treh ugotoviš da si v slepi ulici potem izbriši ta križišče
+        # tretji poti pridi do sorodnjega križišča in tistemu izbij eno od poti stran
+        # potem pa na temu drugemu križišču ki si mu izbil eno pot poglej če sta na obeh možnih smereh krišišča
+        # če je na eni strani slepa ulica to križišče izbriši in pojdi do naslednjega
+        # v naslednjem poglej ali po obeh poteh prideš do križišča - če ja si zapomni katera sta povezaa križišča
+        # krake teh križišč primerjaj z drugimi povezanimi križišči da vidiš če kje lahko povežeš
+        # če sta dva povezljiva imaš kačo, verigo in izločiš še eno pot med njima
+        # če se dva križišča lahko povežeta je to sigurno edina pot, pomeni da imaš daljši kačo
+
+    # def crossroads_with_two_blind_alleys(self, crossroad=(7,1)):
+    #     possible_directions = set(self.point_three_possible_step(crossroad))
+    #     for possible_direction in possible_directions:
+    #         # where you can go from possible direction
+    #
+    #     return possible_directions
+
+    def step_by_step(self, previous_location, crossroad):
+        for direction in self.directions:
+            next_step = self.next_step(previous_location, direction)
+            if self.is_not_wall(next_step) and next_step != crossroad:
+                return next_step
+            else:
+                print("I hit the wall")
+
+    def connect_two_crossroads(self):
+        ...
 
 labyrinth = Labyrinth()
 # print(labyrinth.open_file())
@@ -212,6 +244,10 @@ print("---------------")
 
 print("All possible crossroads are: ", labyrinth.all_possible_three_directions())
 print("No of all possible crossroads are: ", len(labyrinth.all_possible_three_directions()))
+
+# print("Two blind streets", labyrinth.crossroads_with_two_blind_alleys())
+
+print(labyrinth.step_by_step((6, 1), (7, 1)))
 
 """
 print(labyrinth)
