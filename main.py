@@ -179,7 +179,7 @@ class Labyrinth:
                 all_points.add((x, y))
         return all_points
 
-    def all_possible_three_directions(self):
+    def all_crossroads(self):
         # add start and finish to all crossroads
         three_directions = {(1, 0), (40, 79)}
         for point in self.all_possible_points():
@@ -208,11 +208,15 @@ class Labyrinth:
     #
     #     return possible_directions
 
+    # function return next step is there is only one option where to go, if hit the wall return None
     def step_by_step(self, previous_location, crossroad):
         for direction in self.directions:
             next_step = self.next_step(previous_location, direction)
             if self.is_not_wall(next_step) and next_step != crossroad:
-                return next_step
+                if next_step in self.all_crossroads():   # optimise this part of code
+                    print("We hit another crossroad")
+                else:
+                    return next_step
             else:
                 print("I hit the wall")
 
@@ -242,8 +246,8 @@ print(labyrinth.get_any_points_symbol(80, 40))
 
 print("---------------")
 
-print("All possible crossroads are: ", labyrinth.all_possible_three_directions())
-print("No of all possible crossroads are: ", len(labyrinth.all_possible_three_directions()))
+print("All possible crossroads are: ", labyrinth.all_crossroads())
+print("No of all possible crossroads are: ", len(labyrinth.all_crossroads()))
 
 # print("Two blind streets", labyrinth.crossroads_with_two_blind_alleys())
 
