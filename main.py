@@ -1,7 +1,7 @@
 """
 Go to word and replace("■", "#")
 """
-
+import collections
 
 labyrinth_raw_copied_image_from_page = """
 ■☺■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
@@ -98,6 +98,8 @@ class Labyrinth:
         self.directions = {"L": (-1, 0), "R": (1, 0), "D": (0, 1), "U": (0, -1) }
         self.initial_step = self.start()
         self.all_crossroads_absolute = self.all_crossroads()
+        self.removed_crossroads = set()
+        self.non_crossroads_anymore = {}
         self.first_position = self.start()
         self.last_position = self.finish()
         self.two_connected_crossroads = set()  # two connected crossroads dead crossroads in between
@@ -111,8 +113,9 @@ class Labyrinth:
             lines = labyrinth_form_page.readlines()
             for line in lines:
                 line = line.replace("■", "#")
-                line = line.replace("☺", " ")
-                line = line.replace("♥", " ")
+                # change those tvo replace with space
+                line = line.replace("☺", "#")
+                line = line.replace("♥", "#")
                 line = line.replace("\n", "")
                 labyrinth.append(line)
             return labyrinth
@@ -136,6 +139,14 @@ class Labyrinth:
     def get_any_points_symbol(self, x, y):
         return self.open_file()[y][x]
 
+    # first crossroad on map
+    def find_first_crossroad(self, first_step=(1, 1), start=(1, 0)):
+        return self.branch_path(first_step, start)[-1][0]
+
+    # find last crossroad
+    def find_last_crossroad(self, last_step=(79, 39), finish=(79, 40)):
+        return self.branch_path(last_step, finish)[-1][0]
+
     # free directions
     #need to specif previous stem (x, y)
     #direction need to be string "L" = left,"G" = up ,"D" = down , "R" = right
@@ -147,6 +158,7 @@ class Labyrinth:
     def is_not_wall(self, location):
         return self.get_any_points_symbol(*location) == " "
 
+    # you can move in three directions from crossroad - return all three directions from crossroad
     # write in one line...
     # duplicate of self.point_three_possible_step()
     def step_all_directions(self, your_location):
@@ -158,7 +170,7 @@ class Labyrinth:
 
     # Function return tuple for detected crossroad, location of next valid state or None for hitting the wall
     def useful_step(self, your_location, crossroad_location):
-        next_step = list(self.step_all_directions(your_location))
+        next_step = list(self.step_all_directions(your_location))  # all possible steps from current location
         for possible_steps in next_step:
             if possible_steps == crossroad_location:
                 next_step.remove(crossroad_location)
@@ -171,14 +183,63 @@ class Labyrinth:
             print("We hit the wall, blind road detected")
             return None
 
-    def next_valid_step(self, possible_ways):
-        self.current_branch.append(possible_ways)
-        for direction in self.directions:
-            next_step = self.next_step(self.current_branch[-1], direction)
-            if self.is_not_wall(next_step) or next_step in self.current_branch:
-                self.current_branch.append(next_step)
-            else:
-                return self.current_branch[0]
+    # return all points
+    # if last is None - blind road
+    # if last tuple with info about crossroad - crossroad
+    def branch_path(self, your_location, crossroad):
+        current_branch_local = [crossroad, your_location]
+        # continue if last element is not None and is tuple with two numbers
+        while current_branch_local[-1] and type(current_branch_local[-1][0]) == int:
+            # print(current_branch_local)
+            self.useful_step(current_branch_local[-1], current_branch_local[-2])
+            current_branch_local.append(self.useful_step(current_branch_local[-1], current_branch_local[-2]))
+        return current_branch_local
+
+    # three options one/two/three road(s) lead to crossroad
+    # collect dict with all three options
+    def all_path_from_crossroad(self, crossroad):
+        all_path = collections.defaultdict(list)
+        possible_directions = set(self.point_three_possible_step(crossroad))
+        for possible_direction in possible_directions:
+            print(possible_direction)
+            branch_path = self.branch_path(possible_direction, crossroad)
+            all_path[possible_direction] = branch_path
+        return crossroad, all_path
+
+    def use_data_from_all_path(self, crossroad):
+        reachable_crossroads = []
+        crossroad, all_path = self.all_path_from_crossroad(crossroad)
+        for first_step, path in all_path.items():
+            if type(path[-1]) == tuple:
+                reachable_crossroads.append(path[-1])
+        if len(reachable_crossroads) == 1:
+            print("We find dead crossroad")
+            self.non_crossroads_anymore[reachable_crossroads[0][0]] = reachable_crossroads[0][1]
+            self.removed_crossroads.add(crossroad)
+        return reachable_crossroads
+
+    # loop through all crossroads
+    def go_through(self):
+        for crossroad in self.all_crossroads_absolute:
+            print(crossroad)
+            self.use_data_from_all_path(crossroad)
+        self.removed_crossroads.remove(self.find_first_crossroad())  # first crossroad that lead from start
+        self.removed_crossroads.remove(self.find_last_crossroad())  # last crossroad next to finish
+        print(self.removed_crossroads)
+        return len(self.removed_crossroads)
+
+    # def delete_crossroad(self, crossroad):
+    #     if len(self.use_data_from_all_path()) == 1:
+    #
+
+    # def next_valid_step(self, possible_ways):
+    #     self.current_branch.append(possible_ways)
+    #     for direction in self.directions:
+    #         next_step = self.next_step(self.current_branch[-1], direction)
+    #         if self.is_not_wall(next_step) or next_step in self.current_branch:
+    #             self.current_branch.append(next_step)
+    #         else:
+    #             return self.current_branch[0]
 
     # function return next step (coordinate) is there is only one option where to go, if hit the wall return None
     def step_by_step(self, previous_location, crossroad):
@@ -191,14 +252,6 @@ class Labyrinth:
                     return next_step
             else:
                 print("I hit the wall")
-
-    def branch_path(self, crossroad):
-        self.current_branch.clear()
-        self.current_branch.append(crossroad)
-        possible_directions = set(self.point_three_possible_step(crossroad))
-        for possible_direction in possible_directions:
-            self.step_by_step(possible_direction, crossroad)
-
 
     # is specified direction free
     def is_free(self, direction):
@@ -267,11 +320,11 @@ class Labyrinth:
         # če sta dva povezljiva imaš kačo, verigo in izločiš še eno pot med njima
         # če se dva križišča lahko povežeta je to sigurno edina pot, pomeni da imaš daljši kačo
 
-
-    def one_branch(self, previous_location, crossroad):
-        self.current_branch
-        ...
-
+    #
+    # def one_branch(self, previous_location, crossroad):
+    #     self.current_branch
+    #     ...
+    #
 
     def crossroads_with_two_blind_alleys(self, crossroad=(7,1)):
         possible_directions = set(self.point_three_possible_step(crossroad))
@@ -323,6 +376,23 @@ print(labyrinth.step_by_step((6, 1), (7, 1)))
 print(labyrinth.step_all_directions((9, 1)))
 print("Useful step, next valid step is: ", labyrinth.useful_step((9, 1), (8, 1)))
 
+print("Branch path", labyrinth.branch_path((8, 1), (7, 1)))
+print("--------------------------------------------------------------------------------------")
+print("all_path_from_crossroad", labyrinth.all_path_from_crossroad((7, 1)))
+print("all_path_from_crossroad", labyrinth.all_path_from_crossroad((9, 5)))
+
+print("use ", labyrinth.use_data_from_all_path((7, 1)))
+print("use ", labyrinth.use_data_from_all_path((9, 5)))
+print()
+print(labyrinth.non_crossroads_anymore)
+# print()
+print("----------------------------------------------------------------")
+#
+# print("GO THROUGH ALL CROSSROADS", labyrinth.go_through())
+# print(labyrinth.get_any_points_symbol(76, 40))
+
+print("find first", labyrinth.find_first_crossroad())
+print("find last", labyrinth.find_last_crossroad())
 
 """
 print(labyrinth)

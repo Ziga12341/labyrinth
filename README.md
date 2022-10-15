@@ -1,4 +1,4 @@
-** HEKATON MOJE DELO 2022 **
+**HEKATON MOJE DELO 2022**
 
 Final task
 
