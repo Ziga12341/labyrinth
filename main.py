@@ -186,6 +186,7 @@ class Labyrinth:
     # return all points
     # if last is None - blind road
     # if last tuple with info about crossroad - crossroad
+
     def branch_path(self, your_location, crossroad):
         current_branch_local = [crossroad, your_location]
         # continue if last element is not None and is tuple with two numbers
@@ -200,23 +201,69 @@ class Labyrinth:
     def all_path_from_crossroad(self, crossroad):
         all_path = collections.defaultdict(list)
         possible_directions = set(self.point_three_possible_step(crossroad))
-        for possible_direction in possible_directions:
-            print(possible_direction)
-            branch_path = self.branch_path(possible_direction, crossroad)
-            all_path[possible_direction] = branch_path
+        for possible_direction_coordinate, direction in possible_directions:
+            print(possible_direction_coordinate)
+            branch_path = (self.branch_path(possible_direction_coordinate, crossroad), direction)
+            all_path[possible_direction_coordinate] = branch_path
         return crossroad, all_path
 
     def use_data_from_all_path(self, crossroad):
         reachable_crossroads = []
         crossroad, all_path = self.all_path_from_crossroad(crossroad)
         for first_step, path in all_path.items():
-            if type(path[-1]) == tuple:
-                reachable_crossroads.append(path[-1])
+            # in path is direction too (which way yu need to turn in crossroad
+            if type(path[0][-1]) == tuple:
+                reachable_crossroads.append(path[0][-1])
         if len(reachable_crossroads) == 1:
             print("We find dead crossroad")
             self.non_crossroads_anymore[reachable_crossroads[0][0]] = reachable_crossroads[0][1]
             self.removed_crossroads.add(crossroad)
         return reachable_crossroads
+
+    # one way crossroad other way blind street
+    # send reached crossroad to non_crossroads_anymore
+    # first you need to fill data in self.non_crossroads_anymore
+    # call self.go_through first
+    # delete all crossroad reach from non crossroads and
+    def use_data_from_non_crossroads_anymore(self):
+        non_crossroad_data = collections.defaultdict(list)
+        reachable_crossroads_from_non_crossroad = []
+        self.go_through()
+        for non_crossroad, two_path in self.non_crossroads_anymore.items():
+            for path in two_path:
+                branch = self.branch_path(path, non_crossroad)
+                non_crossroad_data[non_crossroad].append(branch)
+        return non_crossroad_data
+
+    # go through both ways in non-crossroads anymore
+    # find all crossroads that become non crossroads
+    def remap_non_crossroad_and_all_crossroads(self):
+        for non_crossroad, two_ways in self.use_data_from_non_crossroads_anymore().items():
+            way_1 = two_ways[0]
+            way_2 = two_ways[1]
+            # print("Way 1: ", way_1)
+            # print("Way 2: ", way_2)
+            if not way_1[-1]:
+                print(way_2[-1])
+
+            if not way_2[-1]:
+                print(way_1[-1])
+
+            # for way in two_ways:
+            #     if not way[-1]:
+            #         print(way[0])
+            #     else:
+            #         print("ELSEEEEEEEEEEEE", way)
+
+        # for non_crossroad, path in non_crossroad_data.items():
+        #     # in path is direction too (which way yu need to turn in crossroad
+        #     if type(path[0][-1]) == tuple:
+        #         reachable_crossroads_from_non_crossroad.append(path[0][-1])
+        # if len(reachable_crossroads_from_non_crossroad) == 1:
+        #     print("We find dead crossroad")
+        #     self.non_crossroads_anymore[reachable_crossroads_from_non_crossroad[0][0]] = reachable_crossroads_from_non_crossroad[0][1]
+        #     self.removed_crossroads.add(crossroad)
+        # return reachable_crossroads_from_non_crossroad
 
     # loop through all crossroads
     def go_through(self):
@@ -227,6 +274,8 @@ class Labyrinth:
         self.removed_crossroads.remove(self.find_last_crossroad())  # last crossroad next to finish
         print(self.removed_crossroads)
         return len(self.removed_crossroads)
+
+    # when you come to crossroad you need to know witch directions you took
 
     # def delete_crossroad(self, crossroad):
     #     if len(self.use_data_from_all_path()) == 1:
@@ -280,11 +329,12 @@ class Labyrinth:
         print(self.path)
         print(self.intersections)
 
+    # direction in possible steps that i know which way I took
     def point_three_possible_step(self, point):
         three_ways = set()
         for direction in self.directions:
             if self.is_not_wall(self.next_step(point, direction)):
-                three_ways.add(self.next_step(point, direction))
+                three_ways.add((self.next_step(point, direction), direction))
         return three_ways
 
     def crossroad(self, point):
@@ -385,17 +435,19 @@ print("use ", labyrinth.use_data_from_all_path((7, 1)))
 print("use ", labyrinth.use_data_from_all_path((9, 5)))
 print()
 print(labyrinth.non_crossroads_anymore)
-# print()
+print()
 print("----------------------------------------------------------------")
-#
-# print("GO THROUGH ALL CROSSROADS", labyrinth.go_through())
-# print(labyrinth.get_any_points_symbol(76, 40))
+print("GO THROUGH ALL CROSSROADS", labyrinth.go_through())
+print(labyrinth.get_any_points_symbol(76, 40))
 
 print("find first", labyrinth.find_first_crossroad())
 print("find last", labyrinth.find_last_crossroad())
 
-"""
-print(labyrinth)
-labyrinth = labyrinth.replace("■", "#")
-print(labyrinth)
-"""
+print()
+print("-----------------------")
+print("Non crossroads anymore", labyrinth.non_crossroads_anymore)
+print(len(labyrinth.non_crossroads_anymore))
+
+
+print("Use data from non-crossroad anymore", labyrinth.use_data_from_non_crossroads_anymore())
+print("remap_non_crossroad_and_all_crossroads", labyrinth.remap_non_crossroad_and_all_crossroads())
