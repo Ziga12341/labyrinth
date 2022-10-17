@@ -180,12 +180,12 @@ class Labyrinth:
             if possible_steps == crossroad_location:
                 next_step.remove(crossroad_location)
         if len(next_step) > 1:
-            print("We reached Crossroad, Crossroad location is: ", your_location)
+            # print("We reached Crossroad, Crossroad location is: ", your_location)
             return your_location, next_step
         elif len(next_step) == 1:
             return next_step[0]
         else:
-            print("We hit the wall, blind road detected")
+            # print("We hit the wall, blind road detected")
             return None
 
     # return all points
@@ -207,11 +207,13 @@ class Labyrinth:
         all_path = collections.defaultdict(list)
         possible_directions = set(self.point_three_possible_step(crossroad))
         for possible_direction_coordinate, direction in possible_directions:
-            print(possible_direction_coordinate)
+            # print(possible_direction_coordinate)
             branch_path = (self.branch_path(possible_direction_coordinate, crossroad), direction)
             all_path[possible_direction_coordinate] = branch_path
         return crossroad, all_path
 
+    # get all crossroads with two blind branches
+    # collect them in non crossroads
     def use_data_from_all_path(self, crossroad):
         reachable_crossroads = []
         crossroad, all_path = self.all_path_from_crossroad(crossroad)
@@ -220,7 +222,7 @@ class Labyrinth:
             if type(path[0][-1]) == tuple:
                 reachable_crossroads.append(path[0][-1])
         if len(reachable_crossroads) == 1:
-            print("We find dead crossroad")
+            # print("We find dead crossroad")
             self.non_crossroads_anymore[reachable_crossroads[0][0]] = reachable_crossroads[0][1]
             self.removed_crossroads.add(crossroad)
         return reachable_crossroads
@@ -244,6 +246,10 @@ class Labyrinth:
     # find all crossroads that become non crossroads
     def remap_non_crossroad_and_all_crossroads(self):
         print("Non crossroads", self.non_crossroads_anymore)
+        print("absolutely all crossroads - removed crossroads", self.all_crossroads_absolute - self.removed_crossroads)
+        print("LEN absolutely all crossroads - removed crossroads: ",
+              len(self.all_crossroads_absolute - self.removed_crossroads))
+        print("Non crossroads", self.non_crossroads_anymore)
         for non_crossroad, two_ways in self.use_data_from_non_crossroads_anymore().items():
             # remove crossroads (non crossroad now) that you cut one branch off in previous function
             # self.all_crossroads_absolute.remove(non_crossroad)
@@ -256,14 +262,14 @@ class Labyrinth:
 
             #  If any of path/branch ends with None print other as non crossroad anymore
             if not way_1[-1]:
-                print(way_2[-1])
+                # print(way_2[-1])
                 last_element_that_reach_crossroad_1 = way_2[-1]
                 reached_crossroad_1 = last_element_that_reach_crossroad_1[0]
                 possible_branches_1 = last_element_that_reach_crossroad_1[1]
                 self.non_crossroads_anymore_2[reached_crossroad_1] = possible_branches_1
 
             if not way_2[-1]:
-                print(way_1[-1])
+                # print(way_1[-1])
                 last_element_that_reach_crossroad_2 = way_1[-1]
                 reached_crossroad_2 = last_element_that_reach_crossroad_2[0]
                 possible_branches_2 = last_element_that_reach_crossroad_2[1]
@@ -277,11 +283,107 @@ class Labyrinth:
         print("non_crossroads_anymore_after_clear", self.non_crossroads_anymore)
         # run another loop through self.non_crossroads_anymore_2
 
-            # for way in two_ways:
-            #     if not way[-1]:
-            #         print(way[0])
-            #     else:
-            #         print("ELSEEEEEEEEEEEE", way)
+    # do the same for non corssroad anymore 2
+    def use_data_from_non_crossroads_anymore_2(self):
+        non_crossroad_data_2 = collections.defaultdict(list)
+        # call remap_non_crossroad_and_all_crossroads first to get data non crossroad anymore 2
+        for non_crossroad, two_path in self.non_crossroads_anymore_2.items():
+            for path in two_path:
+                branch = self.branch_path(path, non_crossroad)
+                non_crossroad_data_2[non_crossroad].append(branch)
+        return non_crossroad_data_2
+
+    def remap_non_crossroad_and_all_crossroads_2(self):
+        print("Non crossroads", self.non_crossroads_anymore)
+        print("absolutely all crossroads - removed crossroads", self.all_crossroads_absolute - self.removed_crossroads)
+        print("LEN absolutely all crossroads - removed crossroads: ",
+              len(self.all_crossroads_absolute - self.removed_crossroads))
+        for non_crossroad, two_ways in self.use_data_from_non_crossroads_anymore_2().items():
+            # remove crossroads (non crossroad now) that you cut one branch off in previous function
+            # self.all_crossroads_absolute.remove(non_crossroad)
+
+            # add crossroads that has dead branch to other dead crossroad and other branch - dead, to removed_crossroads
+            self.removed_crossroads.add(non_crossroad)
+
+            way_1 = two_ways[0]
+            way_2 = two_ways[1]
+
+            #  If any of path/branch ends with None print other as non crossroad anymore
+            if not way_1[-1]:
+                # print(way_2[-1])
+                last_element_that_reach_crossroad_1 = way_2[-1]
+                reached_crossroad_1 = last_element_that_reach_crossroad_1[0]
+                possible_branches_1 = last_element_that_reach_crossroad_1[1]
+                # add data in cleared non_crossroads_anymore ...
+                self.non_crossroads_anymore[reached_crossroad_1] = possible_branches_1
+
+            if not way_2[-1]:
+                # print(way_1[-1])
+                last_element_that_reach_crossroad_2 = way_1[-1]
+                reached_crossroad_2 = last_element_that_reach_crossroad_2[0]
+                possible_branches_2 = last_element_that_reach_crossroad_2[1]
+                # add data in cleared non_crossroads_anymore ...
+                self.non_crossroads_anymore[reached_crossroad_2] = possible_branches_2
+
+        print("removed_crossroads: ", self.removed_crossroads)
+        print("non_crossroads_anymore: ", self.non_crossroads_anymore)
+        print("non_crossroads_anymore_2: ", self.non_crossroads_anymore_2)
+        # clear self.non_crossroads_anymore_2 that will be empty and prepared for next iteration
+        self.non_crossroads_anymore_2.clear()
+        print("non_crossroads_anymore_2_after_clear", self.non_crossroads_anymore_2)
+        # run another loop through self.non_crossroads_anymore_2
+
+    # Call non_crossroads_anymore again
+    def use_data_from_non_crossroads_anymore_1(self):
+        non_crossroad_data_1 = collections.defaultdict(list)
+        # call remap_non_crossroad_and_all_crossroads first to get data non crossroad anymore 2
+        for non_crossroad, two_path in self.non_crossroads_anymore.items():
+            for path in two_path:
+                branch = self.branch_path(path, non_crossroad)
+                non_crossroad_data_1[non_crossroad].append(branch)
+        return non_crossroad_data_1
+
+    # go through both ways in non-crossroads anymore
+    # find all crossroads that become non crossroads
+    def remap_non_crossroad_and_all_crossroads_1(self):
+        print("absolutely all crossroads - removed crossroads", self.all_crossroads_absolute - self.removed_crossroads)
+        print("LEN absolutely all crossroads - removed crossroads: ",
+              len(self.all_crossroads_absolute - self.removed_crossroads))
+        print("Non crossroads", self.non_crossroads_anymore)
+        for non_crossroad, two_ways in self.use_data_from_non_crossroads_anymore_1().items():
+            # remove crossroads (non crossroad now) that you cut one branch off in previous function
+            # self.all_crossroads_absolute.remove(non_crossroad)
+
+            # add crossroads that has dead branch to other dead crossroad and other branch - dead, to removed_crossroads
+            self.removed_crossroads.add(non_crossroad)
+
+            way_1 = two_ways[0]
+            way_2 = two_ways[1]
+
+            #  If any of path/branch ends with None print other as non crossroad anymore
+            if not way_1[-1]:
+                # print(way_2[-1])
+                last_element_that_reach_crossroad_1 = way_2[-1]
+                reached_crossroad_1 = last_element_that_reach_crossroad_1[0]
+                possible_branches_1 = last_element_that_reach_crossroad_1[1]
+                self.non_crossroads_anymore_2[reached_crossroad_1] = possible_branches_1
+
+            if not way_2[-1]:
+                # print(way_1[-1])
+                last_element_that_reach_crossroad_2 = way_1[-1]
+                reached_crossroad_2 = last_element_that_reach_crossroad_2[0]
+                possible_branches_2 = last_element_that_reach_crossroad_2[1]
+                self.non_crossroads_anymore_2[reached_crossroad_2] = possible_branches_2
+
+        print("removed_crossroads: ", self.removed_crossroads)
+        print("non_crossroads_anymore: ", self.non_crossroads_anymore)
+        print("non_crossroads_anymore_2: ", self.non_crossroads_anymore_2)
+        # clear self.non_crossroads_anymore that will be empty
+        self.non_crossroads_anymore.clear()
+        print("non_crossroads_anymore_after_clear", self.non_crossroads_anymore)
+        # run another loop through self.non_crossroads_anymore_2
+
+
 
         # for non_crossroad, path in non_crossroad_data.items():
         #     # in path is direction too (which way yu need to turn in crossroad
@@ -296,7 +398,7 @@ class Labyrinth:
     # loop through all crossroads
     def go_through(self):
         for crossroad in self.all_crossroads_absolute:
-            print(crossroad)
+            # print(crossroad)
             self.use_data_from_all_path(crossroad)
         self.removed_crossroads.remove(self.find_first_crossroad())  # first crossroad that lead from start
         self.removed_crossroads.remove(self.find_last_crossroad())  # last crossroad next to finish
@@ -325,11 +427,13 @@ class Labyrinth:
             next_step = self.next_step(previous_location, direction)
             if self.is_not_wall(next_step) and next_step != crossroad:
                 if next_step in self.all_crossroads_absolute:   # optimise this part of code it takes 5 seconds to get data
-                    print("We hit another crossroad")
+                    # print("We hit another crossroad")
+                    return None
                 else:
                     return next_step
             else:
-                print("I hit the wall")
+                # print("I hit the wall")
+                return None
 
     # is specified direction free
     def is_free(self, direction):
@@ -483,3 +587,21 @@ print(len(labyrinth.non_crossroads_anymore))
 
 print("Use data from non-crossroad anymore", labyrinth.use_data_from_non_crossroads_anymore())
 print("remap_non_crossroad_and_all_crossroads", labyrinth.remap_non_crossroad_and_all_crossroads())
+
+print("use_data_from_non_crossroads_anymore_2", labyrinth.use_data_from_non_crossroads_anymore_2())
+print("remap_non_crossroad_and_all_crossroads_2", labyrinth.remap_non_crossroad_and_all_crossroads_2())
+
+print("use_data_from_non_crossroads_anymore_1, similar than first time", labyrinth.use_data_from_non_crossroads_anymore_1())
+print(" remap_non_crossroad_and_all_crossroads, call second time", labyrinth.remap_non_crossroad_and_all_crossroads_1())
+
+print("use_data_from_non_crossroads_anymore_2", labyrinth.use_data_from_non_crossroads_anymore_2())
+print("remap_non_crossroad_and_all_crossroads_2", labyrinth.remap_non_crossroad_and_all_crossroads_2())
+
+print("use_data_from_non_crossroads_anymore_1, similar than first time", labyrinth.use_data_from_non_crossroads_anymore_1())
+print(" remap_non_crossroad_and_all_crossroads, call second time", labyrinth.remap_non_crossroad_and_all_crossroads_1())
+
+print("use_data_from_non_crossroads_anymore_2", labyrinth.use_data_from_non_crossroads_anymore_2())
+print("remap_non_crossroad_and_all_crossroads_2", labyrinth.remap_non_crossroad_and_all_crossroads_2())
+
+print("use_data_from_non_crossroads_anymore_1, similar than first time", labyrinth.use_data_from_non_crossroads_anymore_1())
+print(" remap_non_crossroad_and_all_crossroads, call second time", labyrinth.remap_non_crossroad_and_all_crossroads_1())
