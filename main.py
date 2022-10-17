@@ -91,25 +91,31 @@ a = ['# ########################################################################
 
 print(a[40][79]) # last position
 
+
 class Labyrinth:
     def __init__(self):
+        self.file = "path.txt"
         # L=Levo | R=Desno | D=Dol | G=Gor (Primer: DDRGLLGDR)
         # L=Left | R=Right | D=Down | U=Up (Primer: DDRULLGDR)
         self.directions = {"L": (-1, 0), "R": (1, 0), "D": (0, 1), "U": (0, -1) }
-        self.initial_step = self.start()
+
+        # crossroads section
         self.all_crossroads_absolute = self.all_crossroads()
         self.removed_crossroads = set()
         self.non_crossroads_anymore = {}
+        self.non_crossroads_anymore_2 = {} # when I find other crossroads to be non crossroads 2 because of non crossroads
+        self.two_connected_crossroads = set()  # two connected crossroads dead crossroads in between
+
         self.first_position = self.start()
         self.last_position = self.finish()
-        self.two_connected_crossroads = set()  # two connected crossroads dead crossroads in between
+        # probably do not need this anymore
         self.current_branch = []
-        self.path = [self.initial_step, (2,2)]
+        self.path = [self.first_position, (2,2)]
         self.intersections = []
 
     def open_file(self):
-        with open("path.txt", "r", encoding="utf-8") as labyrinth_form_page:
-            labyrinth = []
+        with open(self.file, "r", encoding="utf-8") as labyrinth_form_page:
+            new_labyrinth = []
             lines = labyrinth_form_page.readlines()
             for line in lines:
                 line = line.replace("■", "#")
@@ -117,9 +123,8 @@ class Labyrinth:
                 line = line.replace("☺", "#")
                 line = line.replace("♥", "#")
                 line = line.replace("\n", "")
-                labyrinth.append(line)
-            return labyrinth
-
+                new_labyrinth.append(line)
+            return new_labyrinth
 
     def labyrinth_size_x(self):
         return len(self.open_file()[0])
@@ -238,16 +243,39 @@ class Labyrinth:
     # go through both ways in non-crossroads anymore
     # find all crossroads that become non crossroads
     def remap_non_crossroad_and_all_crossroads(self):
+        print("Non crossroads", self.non_crossroads_anymore)
         for non_crossroad, two_ways in self.use_data_from_non_crossroads_anymore().items():
+            # remove crossroads (non crossroad now) that you cut one branch off in previous function
+            # self.all_crossroads_absolute.remove(non_crossroad)
+
+            # add crossroads that has dead branch to other dead crossroad and other branch - dead, to removed_crossroads
+            self.removed_crossroads.add(non_crossroad)
+
             way_1 = two_ways[0]
             way_2 = two_ways[1]
-            # print("Way 1: ", way_1)
-            # print("Way 2: ", way_2)
+
+            #  If any of path/branch ends with None print other as non crossroad anymore
             if not way_1[-1]:
                 print(way_2[-1])
+                last_element_that_reach_crossroad_1 = way_2[-1]
+                reached_crossroad_1 = last_element_that_reach_crossroad_1[0]
+                possible_branches_1 = last_element_that_reach_crossroad_1[1]
+                self.non_crossroads_anymore_2[reached_crossroad_1] = possible_branches_1
 
             if not way_2[-1]:
                 print(way_1[-1])
+                last_element_that_reach_crossroad_2 = way_1[-1]
+                reached_crossroad_2 = last_element_that_reach_crossroad_2[0]
+                possible_branches_2 = last_element_that_reach_crossroad_2[1]
+                self.non_crossroads_anymore_2[reached_crossroad_2] = possible_branches_2
+
+        print("removed_crossroads: ", self.removed_crossroads)
+        print("non_crossroads_anymore: ", self.non_crossroads_anymore)
+        print("non_crossroads_anymore_2: ", self.non_crossroads_anymore_2)
+        # clear self.non_crossroads_anymore that will be empty
+        self.non_crossroads_anymore.clear()
+        print("non_crossroads_anymore_after_clear", self.non_crossroads_anymore)
+        # run another loop through self.non_crossroads_anymore_2
 
             # for way in two_ways:
             #     if not way[-1]:
@@ -272,7 +300,7 @@ class Labyrinth:
             self.use_data_from_all_path(crossroad)
         self.removed_crossroads.remove(self.find_first_crossroad())  # first crossroad that lead from start
         self.removed_crossroads.remove(self.find_last_crossroad())  # last crossroad next to finish
-        print(self.removed_crossroads)
+        print("Removed crossroads are: ", self.removed_crossroads)
         return len(self.removed_crossroads)
 
     # when you come to crossroad you need to know witch directions you took
@@ -290,6 +318,7 @@ class Labyrinth:
     #         else:
     #             return self.current_branch[0]
 
+    # METOD UNUSED
     # function return next step (coordinate) is there is only one option where to go, if hit the wall return None
     def step_by_step(self, previous_location, crossroad):
         for direction in self.directions:
@@ -376,6 +405,7 @@ class Labyrinth:
     #     ...
     #
 
+    # not used
     def crossroads_with_two_blind_alleys(self, crossroad=(7,1)):
         possible_directions = set(self.point_three_possible_step(crossroad))
         for possible_direction in possible_directions:
@@ -395,7 +425,9 @@ class Labyrinth:
         ...
 
 labyrinth = Labyrinth()
+
 # print(labyrinth.open_file())
+
 print(labyrinth.labyrinth_size_x())
 print(labyrinth.labyrinth_size_y())
 print(labyrinth.first_position)
