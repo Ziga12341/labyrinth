@@ -95,6 +95,7 @@ print(a[40][79]) # last position
 class Labyrinth:
     def __init__(self):
         self.file = "path.txt"
+        self.labyrinth_in_list = self.open_file()
         # L=Levo | R=Desno | D=Dol | G=Gor (Primer: DDRGLLGDR)
         # L=Left | R=Right | D=Down | U=Up (Primer: DDRULLGDR)
         self.directions = {"L": (-1, 0), "R": (1, 0), "D": (0, 1), "U": (0, -1) }
@@ -108,9 +109,10 @@ class Labyrinth:
 
         self.first_position = self.start()
         self.last_position = self.finish()
+        self.all_crossroads = self.all_crossroads_absolute - set(self.find_first_crossroad()) - set(self.find_last_crossroad())
         # probably do not need this anymore
         self.current_branch = []
-        self.path = [self.first_position, (2,2)]
+        self.path = [self.first_position, (2, 2)]
         self.intersections = []
 
     def open_file(self):
@@ -126,23 +128,42 @@ class Labyrinth:
                 new_labyrinth.append(line)
             return new_labyrinth
 
+    # adding wall on "dead" crossroads that do not lead anywhere
+    # specify crossroad location where you want to put wall
+    # rewrite whole labyrinth_in_list
+    def replace_dead_crossroads_with_wall(self, x, y):
+        new_labyrinth = []
+        for i, line in enumerate(self.labyrinth_in_list):  # number of line is y
+            if i == y:
+                # convert string to list and change " " with "#" in particular x and .join back to string
+                line = list(line)
+                line[x] = "#"
+                line = "".join(line)
+                new_labyrinth.append(line)
+            else:
+                new_labyrinth.append(line)
+        self.labyrinth_in_list = new_labyrinth
+        return new_labyrinth
+
     def labyrinth_size_x(self):
-        return len(self.open_file()[0])
+        return len(self.labyrinth_in_list[0])
 
     def labyrinth_size_y(self):
-        return len(self.open_file())
+        return len(self.labyrinth_in_list)
 
     def start(self):
-        if self.open_file()[0][1] == " ":
+        # add this part on end
+        if self.labyrinth_in_list[0][1] == " ":
             return 1, 0
 
     def finish(self):
-        if self.open_file()[self.labyrinth_size_y() - 1][self.labyrinth_size_x() - 2] == " ":
+        # add this part on end
+        if self.labyrinth_in_list[self.labyrinth_size_y() - 1][self.labyrinth_size_x() - 2] == " ":
             return self.labyrinth_size_x() - 2, self.labyrinth_size_y() - 1
 
     # from (x, y) get if it is " " or #
     def get_any_points_symbol(self, x, y):
-        return self.open_file()[y][x]
+        return self.labyrinth_in_list[y][x]
 
     # first crossroad on map
     def find_first_crossroad(self, first_step=(1, 1), start=(1, 0)):
@@ -218,11 +239,12 @@ class Labyrinth:
         reachable_crossroads = []
         crossroad, all_path = self.all_path_from_crossroad(crossroad)
         for first_step, path in all_path.items():
-            # in path is direction too (which way yu need to turn in crossroad
+            # in path is direction too (which way you need to turn in crossroad
             if type(path[0][-1]) == tuple:
                 reachable_crossroads.append(path[0][-1])
         if len(reachable_crossroads) == 1:
             # print("We find dead crossroad")
+            #this part put (17, 39) in non crossroads anymore
             self.non_crossroads_anymore[reachable_crossroads[0][0]] = reachable_crossroads[0][1]
             self.removed_crossroads.add(crossroad)
         return reachable_crossroads
@@ -397,7 +419,7 @@ class Labyrinth:
 
     # loop through all crossroads
     def go_through(self):
-        for crossroad in self.all_crossroads_absolute:
+        for crossroad in self.all_crossroads:
             # print(crossroad)
             self.use_data_from_all_path(crossroad)
         self.removed_crossroads.remove(self.find_first_crossroad())  # first crossroad that lead from start
@@ -426,7 +448,7 @@ class Labyrinth:
         for direction in self.directions:
             next_step = self.next_step(previous_location, direction)
             if self.is_not_wall(next_step) and next_step != crossroad:
-                if next_step in self.all_crossroads_absolute:   # optimise this part of code it takes 5 seconds to get data
+                if next_step in self.all_crossroads:   # optimise this part of code it takes 5 seconds to get data
                     # print("We hit another crossroad")
                     return None
                 else:
@@ -527,7 +549,10 @@ class Labyrinth:
 
     def connect_two_crossroads(self):
         ...
+########################################################################################
 
+
+##########################################################################################
 labyrinth = Labyrinth()
 
 # print(labyrinth.open_file())
@@ -552,56 +577,73 @@ print(labyrinth.crossroad((9, 1)))
 print(labyrinth.get_any_points_symbol(80, 40))
 
 print("---------------")
+#
+# print("All possible crossroads are: ", labyrinth.all_crossroads_absolute)
+# print("No of all possible crossroads are: ", len(labyrinth.all_crossroads_absolute))
+#
+# # print("Two blind streets", labyrinth.crossroads_with_two_blind_alleys())
+#
+# print(labyrinth.step_by_step((6, 1), (7, 1)))
+# print(labyrinth.step_all_directions((9, 1)))
+# print("Useful step, next valid step is: ", labyrinth.useful_step((9, 1), (8, 1)))
+#
+# print("Branch path", labyrinth.branch_path((8, 1), (7, 1)))
+# print("--------------------------------------------------------------------------------------")
+# print("all_path_from_crossroad", labyrinth.all_path_from_crossroad((7, 1)))
+# print("all_path_from_crossroad", labyrinth.all_path_from_crossroad((9, 5)))
+#
+# print("use ", labyrinth.use_data_from_all_path((7, 1)))
+# print("use ", labyrinth.use_data_from_all_path((9, 5)))
+# print()
+# print(labyrinth.non_crossroads_anymore)
+# print()
+# print("----------------------------------------------------------------")
+# print("GO THROUGH ALL CROSSROADS", labyrinth.go_through())
+# print(labyrinth.get_any_points_symbol(76, 40))
+#
+# print("find first", labyrinth.find_first_crossroad())
+# print("find last", labyrinth.find_last_crossroad())
+#
+# print()
+# print("-----------------------")
+# # DO NOT WORK - bug
+# # (17, 39) append to removed crossroad
+# print("Non crossroads anymore", labyrinth.non_crossroads_anymore)
+# print(len(labyrinth.non_crossroads_anymore))
+#
+#
+# print("Use data from non-crossroad anymore", labyrinth.use_data_from_non_crossroads_anymore())
+# print("remap_non_crossroad_and_all_crossroads", labyrinth.remap_non_crossroad_and_all_crossroads())
+#
+#
+# print("use_data_from_non_crossroads_anymore_2", labyrinth.use_data_from_non_crossroads_anymore_2())
+# print("remap_non_crossroad_and_all_crossroads_2", labyrinth.remap_non_crossroad_and_all_crossroads_2())
+#
+# print("use_data_from_non_crossroads_anymore_1, similar than first time", labyrinth.use_data_from_non_crossroads_anymore_1())
+# print(" remap_non_crossroad_and_all_crossroads, call second time", labyrinth.remap_non_crossroad_and_all_crossroads_1())
+#
+# print("use_data_from_non_crossroads_anymore_2", labyrinth.use_data_from_non_crossroads_anymore_2())
+# print("remap_non_crossroad_and_all_crossroads_2", labyrinth.remap_non_crossroad_and_all_crossroads_2())
+#
+# print("use_data_from_non_crossroads_anymore_1, similar than first time", labyrinth.use_data_from_non_crossroads_anymore_1())
+# print(" remap_non_crossroad_and_all_crossroads, call second time", labyrinth.remap_non_crossroad_and_all_crossroads_1())
+#
+# print("use_data_from_non_crossroads_anymore_2", labyrinth.use_data_from_non_crossroads_anymore_2())
+# print("remap_non_crossroad_and_all_crossroads_2", labyrinth.remap_non_crossroad_and_all_crossroads_2())
+#
+# print("use_data_from_non_crossroads_anymore_1, similar than first time", labyrinth.use_data_from_non_crossroads_anymore_1())
+# print(" remap_non_crossroad_and_all_crossroads, call second time", labyrinth.remap_non_crossroad_and_all_crossroads_1())
+#
+#
+# # added later manually
+# print("-----------------------------------------------------------------------------------------------------")
+# # it only takes two directions
+# print("use_data_from_all_path", labyrinth.use_data_from_all_path((17, 39)))
+# print("LEN use_data_from_all_path", len(labyrinth.use_data_from_all_path((17, 39))))
 
-print("All possible crossroads are: ", labyrinth.all_crossroads_absolute)
-print("No of all possible crossroads are: ", len(labyrinth.all_crossroads_absolute))
+########################################################################################################################
 
-# print("Two blind streets", labyrinth.crossroads_with_two_blind_alleys())
+print(labyrinth.open_file()[40][80])
 
-print(labyrinth.step_by_step((6, 1), (7, 1)))
-print(labyrinth.step_all_directions((9, 1)))
-print("Useful step, next valid step is: ", labyrinth.useful_step((9, 1), (8, 1)))
-
-print("Branch path", labyrinth.branch_path((8, 1), (7, 1)))
-print("--------------------------------------------------------------------------------------")
-print("all_path_from_crossroad", labyrinth.all_path_from_crossroad((7, 1)))
-print("all_path_from_crossroad", labyrinth.all_path_from_crossroad((9, 5)))
-
-print("use ", labyrinth.use_data_from_all_path((7, 1)))
-print("use ", labyrinth.use_data_from_all_path((9, 5)))
-print()
-print(labyrinth.non_crossroads_anymore)
-print()
-print("----------------------------------------------------------------")
-print("GO THROUGH ALL CROSSROADS", labyrinth.go_through())
-print(labyrinth.get_any_points_symbol(76, 40))
-
-print("find first", labyrinth.find_first_crossroad())
-print("find last", labyrinth.find_last_crossroad())
-
-print()
-print("-----------------------")
-print("Non crossroads anymore", labyrinth.non_crossroads_anymore)
-print(len(labyrinth.non_crossroads_anymore))
-
-
-print("Use data from non-crossroad anymore", labyrinth.use_data_from_non_crossroads_anymore())
-print("remap_non_crossroad_and_all_crossroads", labyrinth.remap_non_crossroad_and_all_crossroads())
-
-print("use_data_from_non_crossroads_anymore_2", labyrinth.use_data_from_non_crossroads_anymore_2())
-print("remap_non_crossroad_and_all_crossroads_2", labyrinth.remap_non_crossroad_and_all_crossroads_2())
-
-print("use_data_from_non_crossroads_anymore_1, similar than first time", labyrinth.use_data_from_non_crossroads_anymore_1())
-print(" remap_non_crossroad_and_all_crossroads, call second time", labyrinth.remap_non_crossroad_and_all_crossroads_1())
-
-print("use_data_from_non_crossroads_anymore_2", labyrinth.use_data_from_non_crossroads_anymore_2())
-print("remap_non_crossroad_and_all_crossroads_2", labyrinth.remap_non_crossroad_and_all_crossroads_2())
-
-print("use_data_from_non_crossroads_anymore_1, similar than first time", labyrinth.use_data_from_non_crossroads_anymore_1())
-print(" remap_non_crossroad_and_all_crossroads, call second time", labyrinth.remap_non_crossroad_and_all_crossroads_1())
-
-print("use_data_from_non_crossroads_anymore_2", labyrinth.use_data_from_non_crossroads_anymore_2())
-print("remap_non_crossroad_and_all_crossroads_2", labyrinth.remap_non_crossroad_and_all_crossroads_2())
-
-print("use_data_from_non_crossroads_anymore_1, similar than first time", labyrinth.use_data_from_non_crossroads_anymore_1())
-print(" remap_non_crossroad_and_all_crossroads, call second time", labyrinth.remap_non_crossroad_and_all_crossroads_1())
+print("replace_dead_crossroads_with_wall", labyrinth.replace_dead_crossroads_with_wall())
+print("labyrinth_in_list", labyrinth.labyrinth_in_list)
