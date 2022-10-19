@@ -163,7 +163,7 @@ class Labyrinth:
         if len(reachable_crossroads) == 1:  # if just one valid way/branch
             self.replace_dead_crossroads_with_wall(crossroad)
             crossroads.add(crossroad)
-            print(crossroad)
+            # print(crossroad)
         self.all_crossroads = self.all_crossroads - crossroads
         return reachable_crossroads
 
@@ -175,16 +175,15 @@ class Labyrinth:
             mark_dead = self.mark_dead_crossroad_as_wall(crossroad)
             if len(mark_dead) == 1:
                 no_of_dead_crossroad_in_this_iteration += 1
-        print((no_of_dead_crossroad_in_this_iteration))
+        print(no_of_dead_crossroad_in_this_iteration)
         return no_of_dead_crossroad_in_this_iteration
 
     # go through as many iterations as needed
     def marking_crossroads_as_dead(self):
         count = 0
         while self.all_crossroads_mark_dead_as_wall() != 0:
-            print(self.labyrinth_in_list)
             count += self.all_crossroads_mark_dead_as_wall()
-        return count
+        return self.labyrinth_in_list
 
     def labyrinth_size_x(self):
         return len(self.labyrinth_in_list[0])
