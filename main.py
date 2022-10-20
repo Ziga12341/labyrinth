@@ -163,7 +163,7 @@ class Labyrinth:
         if len(reachable_crossroads) == 1:  # if just one valid way/branch
             self.replace_dead_crossroads_with_wall(crossroad)
             crossroads.add(crossroad)
-            # print(crossroad)
+            print(crossroad)
         self.all_crossroads = self.all_crossroads - crossroads
         return reachable_crossroads
 
@@ -184,6 +184,27 @@ class Labyrinth:
         while self.all_crossroads_mark_dead_as_wall() != 0:
             count += self.all_crossroads_mark_dead_as_wall()
         return self.labyrinth_in_list
+
+    # for valid crossroad exclude blind branch
+    # save in init which two walid branch you can take from every crossroad
+    # call this function when you now which crossroads are alive
+    # return set with two values starting point (which is crossroad location and possible next step
+    def valid_branches_in_alive_crossroad(self, crossroad):
+        valid_branches = collections.defaultdict(set)
+        _crossroad, path = self.all_path_from_crossroad(crossroad)
+        for first_step, branch_and_direction in path.items():
+            branch, direction = branch_and_direction
+            if branch[-1]:  # if last element in branch is not None - so is not wall than add first step to dict
+                next_step = branch[1]
+                valid_branches[crossroad].add(next_step)
+        return valid_branches
+
+    # collect all valid branches from alive crossroads to set in init
+
+    # from crossroad to crossroad
+    # save directions of every step in init
+
+
 
     def labyrinth_size_x(self):
         return len(self.labyrinth_in_list[0])
@@ -763,3 +784,12 @@ print("-------------------------------------------------------------------------
 print(len(labyrinth.all_crossroads_absolute))
 
 print("marking_crossroads_as_dead", labyrinth.marking_crossroads_as_dead())
+print("all_crossroads", labyrinth.all_crossroads)
+print("LEN all_crossroads", len(labyrinth.all_crossroads))
+
+print("all_path_from_crossroad", labyrinth.all_path_from_crossroad((5, 9)))
+print("all_path_from_crossroad", labyrinth.all_path_from_crossroad((17, 39)))
+print("use_data_from_all_path", labyrinth.use_data_from_all_path((5, 9)))
+print("use_data_from_all_path", labyrinth.use_data_from_all_path((17, 39)))
+
+print("valid_branch_in_alive_crossroad", labyrinth.valid_branches_in_alive_crossroad((17, 39)))
