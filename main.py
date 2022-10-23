@@ -277,6 +277,10 @@ class Labyrinth:
                 self.whole_way_directions.append(direction)
         return self.whole_way_directions
 
+    def write_final_result_in_file(self):
+        with open("Final_result.txt", "w", encoding="utf-8") as file:
+            for direction in self.whole_way_directions:
+                file.write(direction)
 
 if __name__ == "__main__":
     labyrinth = Labyrinth()
@@ -284,4 +288,5 @@ if __name__ == "__main__":
     print("all_branches_from_valid_crossroads", labyrinth.all_branches_from_valid_crossroads())
     print("get_coordinates_for_all_way", labyrinth.get_coordinates_for_all_way())
     print("from_coordinates_to_directions", labyrinth.from_coordinates_to_directions())
+    labyrinth.write_final_result_in_file()
 
