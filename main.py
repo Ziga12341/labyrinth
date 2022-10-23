@@ -97,14 +97,13 @@ class Labyrinth:
         for possible_steps in next_step:
             if possible_steps == crossroad_location:
                 next_step.remove(crossroad_location)
-        # print(next_step)
         if len(next_step) > 1:
-            # print("We reached Crossroad, Crossroad location is: ", your_location)
+            # "We reached Crossroad, Crossroad location is: your_location
             return your_location, next_step
         elif len(next_step) == 1:
             return next_step[0]
         else:
-            # print("We hit the wall, blind road detected")
+            # "We hit the wall, blind road detected"
             return None
 
     # return all points - specify whole branch with coordinates of specific step
@@ -118,7 +117,6 @@ class Labyrinth:
         while current_branch_local[-1] and type(current_branch_local[-1][0]) == int \
                 and not self.start_with_smile(current_branch_local[-1]) \
                 and not self.ends_with_heart(current_branch_local[-1]):
-            # print(current_branch_local)
             self.useful_step(current_branch_local[-1], current_branch_local[-2])
             current_branch_local.append(self.useful_step(current_branch_local[-1], current_branch_local[-2]))
         return current_branch_local
@@ -151,8 +149,7 @@ class Labyrinth:
         return all_points
 
     def all_crossroads(self):
-        # add start and finish to all crossroads
-        three_directions = set()  # {(1, 0), (40, 79)}
+        three_directions = set()
         for point in self.all_possible_points():
             if self.is_not_wall(point) and self.crossroad(point):
                 three_directions.add(point)
@@ -184,7 +181,6 @@ class Labyrinth:
         all_path = collections.defaultdict(tuple)
         possible_directions = set(self.point_three_possible_step(crossroad))
         for possible_direction_coordinate, direction in possible_directions:
-            # print(possible_direction_coordinate)
             branch_path = self.branch_path(possible_direction_coordinate, crossroad), direction
             all_path[possible_direction_coordinate] = branch_path
         return crossroad, all_path
@@ -196,9 +192,8 @@ class Labyrinth:
         crossroads = set()
         crossroad, all_path = self.all_path_from_crossroad(crossroad)
         for first_step, path in all_path.items():
-            # print(path)
             last_step_in_branch = path[0][-1]  # None if hit the wall, tuple if crossroad
-            # in path is direction too (which way you need to turn in crossroad
+            # in path is direction too (which way you need to turn in crossroad)
             if type(last_step_in_branch) == tuple:
                 reachable_crossroads.append(last_step_in_branch)
         if len(reachable_crossroads) == 1:  # if just one valid way/branch
@@ -249,7 +244,6 @@ class Labyrinth:
     # save coordinates of every step
     def get_coordinates_for_all_way(self):
         self.whole_way_from_start_to_end.extend(self.way_to_first_crossroad())
-        crossroad_location = ()
         for i in range(len(self.all_crossroads)):
             crossroad_location = self.whole_way_from_start_to_end[-1]
             last_step = self.whole_way_from_start_to_end[-2]
