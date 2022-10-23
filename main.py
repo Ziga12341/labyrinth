@@ -178,14 +178,6 @@ class Labyrinth:
         self.labyrinth_in_list = new_labyrinth
         return new_labyrinth
 
-    # direction in possible steps that I know which way may I took - no wall
-    def point_three_possible_step(self, point):
-        three_ways = set()
-        for direction in self.directions:
-            if self.is_not_wall(self.next_step(point, direction)):
-                three_ways.add((self.next_step(point, direction), direction))
-        return three_ways
-
     # three options one/two/three road(s) lead to crossroad
     # collect dict with all three options
     def all_path_from_crossroad(self, crossroad):
@@ -289,4 +281,3 @@ if __name__ == "__main__":
     print("get_coordinates_for_all_way", labyrinth.get_coordinates_for_all_way())
     print("from_coordinates_to_directions", labyrinth.from_coordinates_to_directions())
     labyrinth.write_final_result_in_file()
-
