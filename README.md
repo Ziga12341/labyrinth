@@ -1,33 +1,45 @@
-**HEKATON MOJE DELO 2022**
+**Reference labyrinth**   
 
-Final task
+![Reference](referenced_labyrinth.png)
 
-URL  
-https://hekaton.mojedelo.com/
-
-To repository is added Pot na razgovor.html from where you can copy labyrinth
+To repository is added Pot na razgovor(_*).html from where you can copy labyrinth
  
-*Instructions*
-
-POT NA RAZGOVOR  
-Da ne boš zamudil razgovora za svojo sanjsko službo se moraš prebiti skozi naslednji labirint. Labirint je dostopen na naslovu: najdelo.mojedelo.com.  
-
-POT NA RAZGOVOR  
-Živijo, znašel si se v težavah!
-Da ne boš zamudil razgovora za svojo sanjsko službo se moraš prebiti skozi naslednji labirint. Da bo tvoja rešitev uspešno
-sprejeta, moraš v okno na dnu zapisati celotno zaporedje premikov skozi labirint po naslednjem vzorcu:
-
-L=Levo | R=Desno | D=Dol | G=Gor (Primer: DDRGLLGDR)
-
+*Instructions*  
+Specify all sequence of every step you take through labyrinth. 
+ 
+As:  
+L=Left | R=Right | D=Down | U=Up (DDRULLGDR)  
 You need to specify every direction you need to take to come from ☺ to ♥.
- 
-As:
-L=Left | R=Right | D=Down | U=Up (DDRULLGDR)
-        
-self.directions = {"L": (-1, 0), "R": (1, 0), "D": (0, 1), "U": (0, -1) }
-
+directions = {"L": (-1, 0), "R": (1, 0), "D": (0, 1), "U": (0, -1)}  
 You will find final result in Final_result.txt.
 
-Picture is added in repo. It refreshes every 45 seconds and new picture appears.
+Task was part (final task) of MojeDeloHekaton - CTF 
+Picture is added in repo. It refreshes every 45 seconds and new picture with new labyrinth appears.  
+All you need to do in to copy labyrinth from webpage to path.txt (in repo), run main.py and read the result in Final_result.txt.
 
-All you need to do in to copy labyrinth from webpage to path.txt and read the result in Final_result.txt.
+****
+**ABOUTH LAYBRINTH**  
+
+Labyrinth size = 80 × 40  = 3200 points.  
+Crossroad is where path split on two branches - three ways to go from crossroad.  
+There is no crossroads with 4 possible ways or ways that lead in circles (only one valid path from ☺ to ♥)
+Referenced labyrinth has 82 crossroads, 16 of those are valid (path goes through them)  
+For 100 that labyrinths it takes 22 seconds to write down whole path (see algo_speed_test.py in repo).
+
+**HOW IT WORKS**   
+
+- mark wall as "#" and free space as " "
+- find start return coordinate where you find "☺"
+- find finis return coordinate where you find "♥"
+- find way with coordinates to the first crossroad
+- specify what is crossroad (3 free ways one wall)
+- find all crossroads
+- for crossroads that ends with two blind roads (two branches from crossroad hit wall) mark crossroad as wall ("#")
+- every iteration you repeat previous action there is less valid crossroads
+- it takes around 10 iterations to remove all unused (not valid) crossroads
+- from every crossroad that is not removed (changed to wall) remove branch that lead to wall and remember two branches that lead to another crossroad or ☺ or ♥  
+- compose branch by branch to get coordinates for the whole way
+- get direction (D, U, L, R) to go from one coordinate to another
+- write final result in file Final_result.txt  
+
+**for more info check comments in main.py**  

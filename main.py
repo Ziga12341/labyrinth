@@ -1,6 +1,6 @@
 """
-Past your labyrinth on path.txt
-590 different coordinates to get to finish (appended labyrinth)
+Paste your labyrinth in path.txt
+Path of referenced labyrinth takes 554 different directions (coordinates) to get to finish (appended labyrinth)
 """
 import collections
 
@@ -156,7 +156,7 @@ class Labyrinth:
         return three_directions
 
     # this is the most important method in class
-    # adding wall on "dead" crossroads that do not lead anywhere - teo blind roads (branches)
+    # adding wall on "dead" crossroads that do not lead anywhere - from crossorad to two blind roads (branches)
     # specify crossroad location where you want to put wall
     # rewrite whole labyrinth_in_list
     def replace_dead_crossroads_with_wall(self, crossroad):
@@ -171,7 +171,7 @@ class Labyrinth:
                 new_labyrinth.append(line)
             else:
                 new_labyrinth.append(line)
-        # update self.labyrinth_in_list that whole project can access to new data
+        # update self.labyrinth_in_list that whole class can access to new data
         self.labyrinth_in_list = new_labyrinth
         return new_labyrinth
 
@@ -263,6 +263,7 @@ class Labyrinth:
                 self.whole_way_directions.append(direction)
         return self.whole_way_directions
 
+    # in file Final_result.txt is result as string "DRRDDRRDDRRDDDDLLDDDDRRUURRDDRRUURRRRRRRRDDDDRRDDLLDDDDLLDD"
     def write_final_result_in_file(self):
         with open("Final_result.txt", "w", encoding="utf-8") as file:
             for direction in self.whole_way_directions:
