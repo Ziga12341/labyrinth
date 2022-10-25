@@ -9,12 +9,11 @@ class Labyrinth:
     def __init__(self):
         self.file = "path.txt"
         self.labyrinth_in_list = self.open_file()
-        # L=Levo | R=Desno | D=Dol | G=Gor (Primer: DDRGLLGDR)
-        # L=Left | R=Right | D=Down | U=Up (Primer: DDRULLGDR)
+        # L=Left | R=Right | D=Down | U=Up (DDRULLGDR)
         self.directions = {"L": (-1, 0), "R": (1, 0), "D": (0, 1), "U": (0, -1) }
         self.final_directions = {(-1, 0): "L", (1, 0): "R", (0, 1): "D", (0, -1): "U"}
 
-        # all crossroads excluding first and last (on the true way)
+        # all crossroads
         self.all_crossroads = self.all_crossroads()
 
         self.valid_branches = collections.defaultdict(list)
