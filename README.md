@@ -1,6 +1,6 @@
 **Reference labyrinth**   
 
-![Reference](referenced_labyrinth.png)
+![Reference](referenced_maze.png)
 
 To repository is added Labyrinth(_*).html from where you can copy (other three) labyrinths. The one that is shown as reference is already in path.txt.
  

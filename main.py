@@ -82,12 +82,11 @@ class Labyrinth:
     def step_all_directions(self, your_location):
         all_possible_next_steps = set()
         for direction in self.directions:
-            if self.is_not_wall(self.next_step(your_location, direction)):
-                all_possible_next_steps.add(self.next_step(your_location, direction))
-            if self.start_with_smile(self.next_step(your_location, direction)):
-                all_possible_next_steps.add(self.next_step(your_location, direction))
-            if self.ends_with_heart(self.next_step(your_location, direction)):
-                all_possible_next_steps.add(self.next_step(your_location, direction))
+            next_location = self.next_step(your_location, direction)
+            if self.is_not_wall(next_location)\
+                    or self.start_with_smile(next_location)\
+                    or self.ends_with_heart(next_location):
+                all_possible_next_steps.add(next_location)
         return all_possible_next_steps
 
     # Function return tuple for detected crossroad, location of next valid state or None for hitting the wall
