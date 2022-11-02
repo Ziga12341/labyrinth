@@ -1,11 +1,11 @@
-**Reference labyrinth**   
+**Reference maze**   
 
 ![Reference](referenced_maze.png)
 
-To repository is added Labyrinth(_*).html from where you can copy (other three) labyrinths. The one that is shown as reference is already in path.txt.
+To repository is added Maze(_*).html from where you can copy (other three) mazes. The one that is shown as reference is already in path.txt.
  
 *Instructions*  
-Specify all sequence of every step you take through labyrinth. 
+Specify all sequence of every step you take through maze. 
  
 As:  
 L=Left | R=Right | D=Down | U=Up (DDRULLGDR)  
@@ -14,17 +14,17 @@ directions = {"L": (-1, 0), "R": (1, 0), "D": (0, 1), "U": (0, -1)}
 You will find final result in Final_result.txt.
 
 Task was part (final task) of MojeDeloHekaton - CTF   
-Picture of the labyrinth is added in repo. Page was refreshed every 45 seconds and new picture with new labyrinth appeared.  
-To use this code you need to copy labyrinth from webpage (added *.html) to path.txt (in repo), install python 3.x, run main.py and you will get result in Final_result.txt.
+Picture of the maze is added in repo. Page was refreshed every 45 seconds and new picture with new maze appeared.  
+To use this code you need to copy maze from webpage (added *.html) to path.txt (in repo), install python 3.x, run main.py and you will get result in Final_result.txt.
 
 ****
 **ABOUTH LAYBRINTH**  
 
-Labyrinth size = 80 × 40  = 3200 points.  
+Maze size = 80 × 40  = 3200 points.  
 Crossroad is where path split on two branches - three ways to go from crossroad.  
 There is no crossroads with 4 possible ways or ways that lead in circles (only one valid path from ☺ to ♥)
-Referenced labyrinth has 82 crossroads, 16 of those are valid (path goes through them)  
-For 100 that labyrinths it takes 22 seconds to write down whole path (see algo_speed_test.py in repo).
+Referenced maze has 82 crossroads, 16 of those are valid (path goes through them)  
+For 100 that mazes it takes 22 seconds to write down whole path (see algo_speed_test.py in repo).
 
 **HOW IT WORKS**   
 
